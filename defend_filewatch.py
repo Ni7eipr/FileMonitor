@@ -116,8 +116,8 @@ def MyArgparse():
     args.add_argument('-w','--watchlist',metavar=u"目录",nargs='+',help=u"要监控的目录 多个用空格分隔")
 
     other = parser.add_argument_group('other arguments')
-    other.add_argument('-b','--backupdir',metavar=u"目录",default="/var/var",help=u"备份的位置 默认/var/var")
-    other.add_argument('--logfile',metavar=u"文件",default="/var/log/filewatch.log",help=u"日志位置 默认/var/log/filewatch.log")
+    other.add_argument('-b','--backupdir',metavar=u"目录",default="/tmp/filewatch/backup",help=u"备份的位置 默认/tmp/filewatch/backup")
+    other.add_argument('--logfile',metavar=u"文件",default="/tmp/filewatch/filewatch.log",help=u"日志位置 默认/tmp/filewatch/filewatch.log")
     other.add_argument('--debug',action="store_true",help=u"输出详细的debug信息")
     args.add_argument('-i','--ignore',metavar=u"后缀",nargs='+',default=['jpg','png','gif'],help=u"允许的后缀,修改会覆盖。 默认jpg,png,gif")
 
@@ -147,7 +147,7 @@ def removeFileOrDir(targetFile):
         splittarget = os.path.basename(targetFile)
         for i in splittarget:
             # 如果文件名包含下面以外的字符 删除文件
-            if i in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.":
+            if i in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._-":
                 pass
             else:
                 notok = True
