@@ -26,3 +26,9 @@ other arguments:
   --logfile 文件          日志位置 默认/var/log/filewatch.log
   --debug               输出详细的debug信息
 ```
+
+# fileWatchLite
+useage:
+        python fileWatchList 目录
+        -w 仅监控
+        -d 开启debug

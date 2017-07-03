@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# author:End1ng
+# author:Ni7eip
 
 import logging
 import pyinotify
@@ -162,8 +162,11 @@ def removeFileOrDir(targetFile):
         else:
             LOG.info("[*]允许新建" + targetFile)
 
-def removeStrInFile(targetFile):
-     pass
+# def mkdirOrFile(file):
+#     if not os.path.exists(os.path.dirname(file)):
+#         os.makedirs(os.path.dirname(file))
+#     if not os.path.exists(file):
+#         open(file, 'w')
 
 def copyFiles(sourcepath,  destpath):
     global filehash
