@@ -50,53 +50,53 @@ class MyEventHandler(pyinotify.ProcessEvent):
 
     #IN_ACCESS，即文件被访问
     def process_IN_ACCESS(self, event):
-        LOG.debug("文件被访问:" + event.pathname.decode('utf-8'))
+        LOG.debug("文件被访问:" + event.pathname)
     #IN_MODIFY，文件被write
     def process_IN_MODIFY(self, event):
-        removeStrInFile(event.pathname.decode('utf-8'))
-        restoreFile(event.pathname.decode('utf-8'))
+        removeStrInFile(event.pathname)
+        restoreFile(event.pathname)
     #IN_ATTRIB，文件属性被修改，如chmod、chown、touch等
     def process_IN_ATTRIB(self, event):
-        LOG.debug("文件属性被修改:" + event.pathname.decode('utf-8'))
+        LOG.debug("文件属性被修改:" + event.pathname)
     #IN_CLOSE_WRITE，可写文件被close
     def process_IN_CLOSE_WRITE(self, event):
-        LOG.debug("可写文件被关闭:" + event.pathname.decode('utf-8'))
+        LOG.debug("可写文件被关闭:" + event.pathname)
     #IN_CLOSE_NOWRITE，不可写文件被close
     def process_IN_CLOSE_NOWRITE(self, event):
-        LOG.debug("不可写文件被关闭:" + event.pathname.decode('utf-8'))
+        LOG.debug("不可写文件被关闭:" + event.pathname)
     #IN_OPEN，文件被open
     def process_IN_OPEN(self, event):
-        LOG.debug("文件被打开:" + event.pathname.decode('utf-8'))
+        LOG.debug("文件被打开:" + event.pathname)
     #IN_MOVED_FROM，文件被移走,如mv
     def process_IN_MOVED_FROM(self, event):
-        LOG.info("文件被移走:" + event.pathname.decode('utf-8'))
+        LOG.info("文件被移走:" + event.pathname)
     #IN_MOVED_TO，文件被移来，如mv、cp
     def process_IN_MOVED_TO(self, event):
-        # if event.pathname.decode('utf-8') in filehash:
-            LOG.info( "文件被移来:" + event.pathname.decode('utf-8'))
-            removeFileOrDir(event.pathname.decode('utf-8'))
+        # if event.pathname in filehash:
+            LOG.info( "文件被移来:" + event.pathname)
+            removeFileOrDir(event.pathname)
     #IN_CREATE，创建新文件
     def process_IN_CREATE(self, event):
-            LOG.info("创建新文件:" + event.pathname.decode('utf-8'))
-            removeFileOrDir(event.pathname.decode('utf-8'))
+            LOG.info("创建新文件:" + event.pathname)
+            removeFileOrDir(event.pathname)
     #IN_DELETE，文件被删除，如rm
     def process_IN_DELETiE(self, event):
-        LOG.info("文件被删除:" + event.pathname.decode('utf-8'))
+        LOG.info("文件被删除:" + event.pathname)
     #IN_DELETE_SELF，自删除，即一个可执行文件在执行时删除自己
     def process_IN_DELETE_SELF(self, event):
-        LOG.info("可执行文件删除:" + event.pathname.decode('utf-8'))
+        LOG.info("可执行文件删除:" + event.pathname)
     #IN_MOVE_SELF，自移动，即一个可执行文件在执行时移动自己
     def process_IN_MOVE_SELF(self, event):
-        LOG.info("可执行文件移动:" + event.pathname.decode('utf-8'))
+        LOG.info("可执行文件移动:" + event.pathname)
     #IN_UNMOUNT，宿主文件系统被umount
     def process_IN_UNMOUNT(self, event):
-        LOG.info("文件系统被umount:" + event.pathname.decode('utf-8'))
+        LOG.info("文件系统被umount:" + event.pathname)
     #IN_CLOSE，文件被关闭，等同于(IN_CLOSE_WRITE | IN_CLOSE_NOWRITE)
     def process_IN_CLOSE(self, event):
-        LOG.debug("文件被关闭:" + event.pathname.decode('utf-8'))
+        LOG.debug("文件被关闭:" + event.pathname)
     #IN_MOVE，文件被移动，等同于(IN_MOVED_FROM | IN_MOVED_TO)
     def process_IN_MOVE(self, event):
-        LOG.info("文件被移动:" + event.pathname.decode('utf-8'))
+        LOG.info("文件被移动:" + event.pathname)
 
 def MyArgparse():
     parser = argparse.ArgumentParser(usage="%(prog)s [options]",add_help=False,
@@ -179,7 +179,7 @@ def copyFiles(sourcepath,  destpath):
             filecontent = open(sourceFile, "rb").read()
             md5file = hashlib.md5()
             md5file.update(filecontent)
-            filehash[sourceFile.decode('utf-8')] = md5file.hexdigest()
+            filehash[sourceFile] = md5file.hexdigest()
             open(targetFile, "wb").write(filecontent)
         if os.path.isdir(sourceFile):
             copyFiles(sourceFile, targetFile)

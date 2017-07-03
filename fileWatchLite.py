@@ -21,13 +21,17 @@ class MyEventHandler(pyinotify.ProcessEvent):
         open(logfile, 'a').write("创建文件:" + event.pathname + "\n")
         0 if Onlywatch else removeFileOrDir(event.pathname)
     def process_IN_MOVED_TO(self, event):
-        print  "文件移入:" + event.pathname
-        open(logfile, 'a').write("文件移入:" + event.pathname + "\n")
+        print  "移入文件:" + event.pathname
+        open(logfile, 'a').write("移入文件:" + event.pathname + "\n")
         0 if Onlywatch else removeFileOrDir(event.pathname)
     def process_IN_MODIFY(self, event):
-        print "文件改动:" + event.pathname
-        open(logfile, 'a').write("文件改动:" + event.pathname + "\n")
+        print "改动文件:" + event.pathname
+        open(logfile, 'a').write("改动文件:" + event.pathname + "\n")
         0 if Onlywatch else restoreFile(event.pathname)
+    # def process_IN_DELETiE(self, event):
+    #     print "删除文件:" + event.pathname
+    #     open(logfile, 'a').write("删除文件:" + event.pathname + "\n")
+    #     0 if Onlywatch else restoreFile(event.pathname)
 
 def output(data):
     print data
