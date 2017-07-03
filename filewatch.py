@@ -80,7 +80,7 @@ class MyEventHandler(pyinotify.ProcessEvent):
             LOG.info("创建新文件:" + event.pathname)
             removeFileOrDir(event.pathname)
     #IN_DELETE，文件被删除，如rm
-    def process_IN_DELETiE(self, event):
+    def process_IN_DELETE(self, event):
         LOG.info("文件被删除:" + event.pathname)
     #IN_DELETE_SELF，自删除，即一个可执行文件在执行时删除自己
     def process_IN_DELETE_SELF(self, event):

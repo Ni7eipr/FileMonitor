@@ -8,33 +8,60 @@ import os,sys
 import hashlib
 import signal
 
-def CtrlCHandler(signum, frame):
-    sys.exit("\n再见")
-signal.signal(signal.SIGINT, CtrlCHandler)
+if sys.argv.__len__() > 1 and os.path.exists(sys.argv[1]) and sys.argv[1][0] == '/':
+    watchlist = sys.argv[1]
+else:
+    sys.exit('useage:\n\tpython fileWatchList /var/www/html\n\t-w 仅监控\n\t-d 开启debug')
 
+debug = True if '-d' in sys.argv else False
+onlywatch = True if '-w' in sys.argv else False
+bakdir = '/tmp/filewatch/'
+backup = bakdir + 'backup'
+logfile = bakdir + 'log.txt'
+
+file_hash = {}
 class MyEventHandler(pyinotify.ProcessEvent):
     def process_IN_OPEN(self, event):
-        output("打开文件:" + event.pathname) if debug else 0
-        open(logfile, 'a').write("打开文件:" + event.pathname + "\n")
+        output("打开文件:" + event.pathname)
     def process_IN_CREATE(self, event):
-        print "创建文件:" + event.pathname
-        open(logfile, 'a').write("创建文件:" + event.pathname + "\n")
-        0 if Onlywatch else removeFileOrDir(event.pathname)
+        output("创建文件:" + event.pathname, 1)
+        if not onlywatch:
+            if 'ph' not in os.path.splitext(event.pathname)[-1] or event.pathname in file_hash:
+                output("[*]创建文件:" + event.pathname, 1)
+            else:
+                removeFileOrDir(event.pathname)
     def process_IN_MOVED_TO(self, event):
-        print  "移入文件:" + event.pathname
-        open(logfile, 'a').write("移入文件:" + event.pathname + "\n")
-        0 if Onlywatch else removeFileOrDir(event.pathname)
+        output("移入文件:" + event.pathname, 1)
+        if not onlywatch:
+            if 'ph' in os.path.splitext(event.pathname)[-1]:
+                removeFileOrDir(event.pathname)
+            else:
+                output("[*]移入文件:" + event.pathname, 1)
     def process_IN_MODIFY(self, event):
-        print "改动文件:" + event.pathname
-        open(logfile, 'a').write("改动文件:" + event.pathname + "\n")
-        0 if Onlywatch else restoreFile(event.pathname)
-    # def process_IN_DELETiE(self, event):
-    #     print "删除文件:" + event.pathname
-    #     open(logfile, 'a').write("删除文件:" + event.pathname + "\n")
-    #     0 if Onlywatch else restoreFile(event.pathname)
+        output("改动文件:" + event.pathname, 1)
+        if not onlywatch:
+            if event.pathname in file_hash:
+                if file_hash[event.pathname] == getMd5(open(event.pathname, 'rb').read()):
+                    output("[*]文件无变化:" + event.pathname, 1)
+                else:
+                    restoreFile(event.pathname)
+                    output("[*]恢复文件:" + event.pathname, 1)
+            else:
+                output("[*]改动文件:" + event.pathname, 1)
+    def process_IN_DELETE(self, event):
+        output("删除文件:" + event.pathname, 1)
+        if not onlywatch:
+            if event.pathname in file_hash:
+                output("[*]删除文件:" + event.pathname, 1)
+                restoreFile(event.pathname)
+                output("[*]恢复文件:" + event.pathname, 1)
+            else:
+                output("[*]删除文件:" + event.pathname, 1)
 
-def output(data):
-    print data
+def output(text, debug=debug):
+    open(logfile, 'a').write(text + "\n")
+    if debug:
+        print text
 
 def getMd5(data):
     md5file = hashlib.md5()
@@ -42,20 +69,17 @@ def getMd5(data):
     return md5file.hexdigest()
 
 def copyFiles(sourcepath,  destpath):
-    global filehash
+    global file_hash
     for file in os.listdir(sourcepath):
         sourceFile = sourcepath + '/' + file
         targetFile = destpath + '/' + file
-
         if os.path.isfile(sourceFile):
             if not os.path.exists(destpath):
                 os.makedirs(destpath)
-
             filecontent = open(sourceFile, 'rb').read()
-            filehash[sourceFile] = getMd5(filecontent)
-
             open(targetFile, 'wb').write(filecontent)
-
+            if 'ph' in os.path.splitext(sourceFile)[-1]:
+                file_hash[sourceFile] = getMd5(filecontent)
         if os.path.isdir(sourceFile):
             copyFiles(sourceFile, targetFile)
 
@@ -66,39 +90,19 @@ def removeFileOrDir(targetFile):
             removeFileOrDir(targetFile + "/" + files)
         try:
             os.rmdir(targetFile)
-            print "[*]删除文件夹" + targetFile
         except:
             pass
 
     if os.path.isfile(targetFile):
-        ext = os.path.splitext(targetFile)[-1]
-        if 'ph' in ext:
-            print "[*]删除文件" + targetFile
-        else:
-            print "[*]允许新建" + targetFile
+        os.remove(targetFile)
 
 def restoreFile(targetFile):
-    try:
-        filecontent = open(targetFile, 'rb').read()
-        # 如果不比对hash，恢复文件时也会判为修改文件陷入死循环
-        if filehash[targetFile] == getMd5(filecontent):
-            return
-        open(targetFile, 'wb').write(open(backupdir + '/' + targetFile, 'rb').read())
-        print '[*]文件恢复成功' + targetFile
-    except:
-        pass
+    open(targetFile, 'wb').write(open(backup + targetFile, 'rb').read())
 
-if sys.argv.__len__() > 1 and os.path.exists(sys.argv[1]):
-    watchlist = sys.argv[1]
-else:
-    sys.exit('useage:\n\tpython fileWatchList 目录\n\t-w 仅监控\n\t-d 开启debug')
+def CtrlCHandler(signum, frame):
+    sys.exit("\n再见")
 
-debug = True if '-d' in sys.argv else False
-Onlywatch = True if '-w' in sys.argv else False
-bakdir = '/tmp/filewatch/'
-backup = bakdir + 'backup/'
-logfile = bakdir + 'log.txt'
-filehash = {}
+signal.signal(signal.SIGINT, CtrlCHandler)
 
 try:
     copyFiles(watchlist,backup + watchlist) if '-w' not in sys.argv else 0
