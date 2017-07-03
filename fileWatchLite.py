@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 文件监控轻量版
+
 import pyinotify
 import os,sys
 import hashlib
@@ -18,8 +20,8 @@ class MyEventHandler(pyinotify.ProcessEvent):
         open(logfile, 'a').write("文件移入:" + event.pathname + "\n")
         0 if Onlywatch else removeFileOrDir(event.pathname)
     def process_IN_MODIFY(self, event):
-        print "文件写入:" + event.pathname
-        open(logfile, 'a').write("文件写入:" + event.pathname + "\n")
+        print "文件改动:" + event.pathname
+        open(logfile, 'a').write("文件改动:" + event.pathname + "\n")
         0 if Onlywatch else restoreFile(event.pathname)
 
 def output(data):
@@ -60,21 +62,8 @@ def removeFileOrDir(targetFile):
             pass
 
     if os.path.isfile(targetFile):
-        notok = False
-        splittarget = os.path.basename(targetFile)
-        for i in splittarget:
-            # 如果文件名包含下面以外的字符 删除文件
-            if i in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._-":
-                pass
-            else:
-                notok = True
-        splittarget = splittarget.split(".")
-        if splittarget[-1] in whitelist:
-            pass
-        else:
-            notok = True
-        if notok:
-            os.remove(targetFile)
+        ext = os.path.splitext(targetFile)[-1]
+        if 'ph' in ext:
             print "[*]删除文件" + targetFile
         else:
             print "[*]允许新建" + targetFile
@@ -85,16 +74,12 @@ def restoreFile(targetFile):
         # 如果不比对hash，恢复文件时也会判为修改文件陷入死循环
         if filehash[targetFile] == getMd5(filecontent):
             return
-        print '文件被改动:' +  targetFile
         open(targetFile, 'wb').write(open(backupdir + '/' + targetFile, 'rb').read())
         print '[*]文件恢复成功' + targetFile
     except:
         pass
 
-
-
-
-if os.path.exists(sys.argv[1]):
+if sys.argv.__len__() > 1 and os.path.exists(sys.argv[1]):
     watchlist = sys.argv[1]
 else:
     sys.exit('useage:\n\tpython fileWatchList 目录\n\t-w 仅监控\n\t-d 开启debug')
@@ -104,7 +89,6 @@ Onlywatch = True if '-w' in sys.argv else False
 bakdir = '/tmp/filewatch/'
 backup = bakdir + 'backup/'
 logfile = bakdir + 'log.txt'
-whitelist = ['jpg', 'png', 'gif', 'txt']
 filehash = {}
 
 copyFiles(watchlist,backup + watchlist) if '-w' not in sys.argv else 0
