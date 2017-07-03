@@ -6,6 +6,11 @@
 import pyinotify
 import os,sys
 import hashlib
+import signal
+
+def CtrlCHandler(signum, frame):
+    sys.exit("\n再见")
+signal.signal(signal.SIGINT, CtrlCHandler)
 
 class MyEventHandler(pyinotify.ProcessEvent):
     def process_IN_OPEN(self, event):
@@ -91,7 +96,10 @@ backup = bakdir + 'backup/'
 logfile = bakdir + 'log.txt'
 filehash = {}
 
-copyFiles(watchlist,backup + watchlist) if '-w' not in sys.argv else 0
+try:
+    copyFiles(watchlist,backup + watchlist) if '-w' not in sys.argv else 0
+except (IOError, OSError),e:
+    print e
 
 # watch manager
 wm = pyinotify.WatchManager()
