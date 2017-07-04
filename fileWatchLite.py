@@ -68,6 +68,12 @@ def getMd5(data):
     md5file.update(data)
     return md5file.hexdigest()
 
+def mkdirOrFile(file):
+    if not os.path.exists(os.path.dirname(file)):
+        os.makedirs(os.path.dirname(file))
+    if not os.path.exists(file):
+        open(file, 'w')
+
 def copyFiles(sourcepath,  destpath):
     global file_hash
     for file in os.listdir(sourcepath):
@@ -104,10 +110,14 @@ def CtrlCHandler(signum, frame):
 
 signal.signal(signal.SIGINT, CtrlCHandler)
 
+mkdirOrFile(logfile)
+output("[*]开始备份", 1)
 try:
     copyFiles(watchlist,backup + watchlist) if '-w' not in sys.argv else 0
 except (IOError, OSError),e:
     print e
+output("[*]备份位置:" + backup, 1)
+output("[*]日志位置:" + logfile, 1)
 
 # watch manager
 wm = pyinotify.WatchManager()
